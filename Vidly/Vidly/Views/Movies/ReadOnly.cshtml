@@ -1,0 +1,61 @@
+﻿@{
+    ViewBag.Title = "Movies";
+}
+<h2>Movies</h2>
+
+<table id="mytable" class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Movie Name</th>
+            <th>Release Date</th>
+            <th>Genre</th>
+            <th>Stock</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            var table;
+            var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
+
+            $.ajax({
+                url: "/api/Moviess",
+                type: 'Get',
+                dataType: 'json',
+                success: function (data) {
+                    table = $("#mytable").DataTable({
+                        data: data,
+                        columns: [
+                            {
+                                data: "name",
+                            },
+                            {
+                                data: "releaseDate",
+                                render: function (jsonDate) {
+                                    var date = jsonDate.substr(0, 10);
+                                    var t = new Date(date);
+                                    return t.getDay() + "-" + monthNames[t.getMonth()] + "-" + t.getFullYear();
+                                }
+                            },
+                            {
+                                //  data: "membershipType.name",
+                                data: "genre.name",
+                            },
+                            {
+                                data: "numberInStock",
+                            }
+                        ]
+                    });//data table closing
+                },// succes function closing
+                error: function (e) {
+                    alert('Error Loading Table');
+                }
+            }); //ajax closing
+
+           
+                
+        });
+    </script>
+}

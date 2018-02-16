@@ -1,0 +1,94 @@
+﻿@*@model IEnumerable<Vidly.Models.Customer>*@
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table id="mytable" class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Customer Name</th>
+            <th>Birth Date</th>
+            <th>Membership Type</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<script src="~/Scripts/jquery-1.10.2.js"></script>
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            var table;
+            var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
+
+            $.ajax({
+                url: "/Customers/Getall_Users_MemberType_Name",
+                type: 'Get',
+                dataType: 'json',
+                success: function (data) {
+                    table= $("#mytable").DataTable({
+                        data: data,
+                        columns: [
+                            {
+                                data: "Name",
+                                render: function (data, type, row, meta) {
+                                    return "<a href='/Customers/Edit/" + row.Id + "'>" + row.Name + "</a>";
+                                }
+                            },
+                            {
+                                data: "DateofBirth",
+                                render: function (jsonDate) {
+                                    try {
+                                        var date = new Date(parseInt(jsonDate.substr(6)));
+                                        var month = date.getMonth() + 1;
+                                        return date.getDate() + "-" + monthNames[date.getMonth()] + "-" + date.getFullYear();
+
+                                       // return date.getDate() + "/" + month + "/" + date.getFullYear();
+                                    } catch(error){
+                                        return null;
+                                    }
+                                }
+                            },
+                            {
+                                data: "MembershipType.Name",
+                            },
+                            {
+                                data: "Id",
+                                render: function (data, type, row, meta) {
+                                    return "<button class='btn-link js-delete' title='" + row.Name + "' delrow='" + row.Id + "'> Delete</button >";
+                                }
+                            }
+                        ]
+                    });//data table closing
+                },// succes function closing
+                error: function (e) {
+                    alert('Error Loading Table');
+                }
+            }); //ajax closing
+
+            $("#mytable tbody").on('click', '.js-delete', function () {
+
+                var button = $(this);
+                bootbox.confirm("Are YOu Sure You want to delete this User '" + $(this).attr('title') + "' ?", function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: "/api/Customerss/" + button.attr('delrow'), //$(this).attr("data-user-id"),
+                            method: "DELETE",
+                            success: function () {
+                                button.closest('tr').addClass('selected');
+                                table.row('.selected').remove().draw(false);
+                            }
+                        });
+                    }
+                });
+            });
+
+        });
+    </script>
+}
